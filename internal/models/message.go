@@ -442,7 +442,7 @@ func GetLatestMessageByThread(threadID string) (*MessageDocument, error) {
 
 	return &messages[0], nil
 }
-
+// TODO: enforce message deletion time limit (CYBERTRON-032)
 func (m *MessageDocument) DeleteMessage(db *gorm.DB, logger *utility.Logger) (map[string]any, error) {
 	var (
 		thread ThreadDocument
