@@ -667,3 +667,60 @@ func ToggleUserJoinedMessage(db *gorm.DB, channelId string, req models.ToggleJoi
 
 	return updated, http.StatusOK, nil
 }
+
+func ToggleStarChannel(req models.ChannelStarRequest, db *gorm.DB) (bool, int, error) {
+	var channel models.Channels
+	exists := postgresql.CheckExists(db, &channel, "id = ?", req.ChannelId)
+	if !exists {
+		return false, http.StatusNotFound, errors.New("channel does not exist")
+	}
+
+	var star models.ChannelStar
+	isStarred := star.IsStarChannel(db, req)
+
+	if isStarred {
+		err := star.RemoveFromStars(db, req)
+		if err != nil {
+			return false, http.StatusInternalServerError, err
+		}
+		return false, http.StatusOK, nil
+	}
+
+	star.ID = utility.GenerateUUID()
+	err := star.AddToStars(db, req)
+	if err != nil {
+		return false, http.StatusInternalServerError, err
+	}
+	return true, http.StatusOK, nil
+}
+
+func GetStarredChannels(db *storage.Database, ids models.IDS) (models.GetUserChannelResp, int, error) {
+	starredChannelIds, err := models.GetUserStarredChannelIds(db.Postgresql, ids.UserID, ids.OrganisationID)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	if len(starredChannelIds) == 0 {
+		return models.GetUserChannelResp{}, http.StatusOK, nil
+	}
+
+	userChannels, err := GetUserChannels(db, ids)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	starredMap := make(map[string]bool)
+	for _, id := range starredChannelIds {
+		starredMap[id] = true
+	}
+
+	var starredList models.GetUserChannelResp
+	for _, ch := range userChannels {
+		if starredMap[ch.ID] {
+			starredList = append(starredList, ch)
+		}
+	}
+
+	return starredList, http.StatusOK, nil
+}
+

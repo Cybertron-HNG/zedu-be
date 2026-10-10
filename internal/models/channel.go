@@ -112,6 +112,7 @@ type GetChannelResp struct {
 	ActiveBuzz     *ActiveBuzzInfo     `json:"active_buzz,omitempty"`
 	PreviewMedia   []FileMediaResponse `json:"preview_media"`
 	CreatedAt      time.Time           `json:"created_at"`
+	IsStarred      bool                `json:"is_starred"`
 	Participants   []Participant       `json:"participants"`
 	Users          []Participant       `json:"users"`
 	TotalUserCount int64               `json:"total_user_count"`
@@ -134,6 +135,7 @@ type GetUserChannelResp []struct {
 	PreviewMessage string          `json:"preview_message"`
 	LastReadAt     time.Time       `json:"last_read_at"`
 	Restricted     bool            `json:"restricted"`
+	IsStarred      bool            `gorm:"-" json:"is_starred"`
 }
 
 type RestrictUserReq struct {
@@ -520,6 +522,11 @@ func (r *Channels) GetChannelByID(db *storage.Database, chanReq ChannelInfo) (Ge
 			Pluck("restricted", &isRestricted)
 	}
 
+	var isStarred bool
+	if db != nil {
+		isStarred = IsChannelStarred(db.Postgresql, chanReq.UserID, chanReq.ChannelID)
+	}
+
 	chanResp = GetChannelResp{
 		Channels:       channel,
 		OwnerName:      owner.Name,
@@ -530,6 +537,7 @@ func (r *Channels) GetChannelByID(db *storage.Database, chanReq ChannelInfo) (Ge
 		ActiveBuzz:     activeBuzzInfo,
 		PreviewMedia:   previewMedia,
 		CreatedAt:      channel.CreatedAt,
+		IsStarred:      isStarred,
 		Participants:   participants,
 		Users:          previewUsers,
 		TotalUserCount: count,
@@ -1309,6 +1317,15 @@ func (uc *UserChannels) GetUserChannels(base *storage.Database, ids IDS) (GetUse
 		parts := strings.Split(chanResp[i].ID, "-")
 		lastPart := parts[len(parts)-1]
 		chanResp[i].ChannelSlug = fmt.Sprintf("%s-%s", slug.Make(chanResp[i].Name), lastPart)
+	}
+
+	starredChannelIds, _ := GetUserStarredChannelIds(db, ids.UserID, ids.OrganisationID)
+	starredMap := make(map[string]bool)
+	for _, id := range starredChannelIds {
+		starredMap[id] = true
+	}
+	for i := range chanResp {
+		chanResp[i].IsStarred = starredMap[chanResp[i].ID]
 	}
 
 	sort.Slice(chanResp, func(i, j int) bool {
