@@ -64,6 +64,14 @@ func GetPagination(c *gin.Context) Pagination {
 }
 
 func SelectWithPagination(Client *elasticsearch.Client, indexName []string, query map[string]any, reciever *any, c *gin.Context) (*PaginationResponse, error) {
+	if Client == nil {
+		return &PaginationResponse{
+			CurrentPage:     defaultPage,
+			PageCount:       0,
+			TotalPagesCount: 0,
+			SummaryCount:    0,
+		}, nil
+	}
 
 	pag := GetPagination(c)
 
