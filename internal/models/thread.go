@@ -1468,7 +1468,14 @@ func UnmarshalThreadResponse(threadData any) (threads []Threads, err error) {
 		} `json:"hits"`
 	}
 
-	rawJSON, _ := json.MarshalIndent(threadData.(map[string]any), "", "  ")
+	if threadData == nil {
+		return nil, nil
+	}
+	dataMap, ok := threadData.(map[string]any)
+	if !ok {
+		return nil, nil
+	}
+	rawJSON, _ := json.MarshalIndent(dataMap, "", "  ")
 
 	if errr := json.Unmarshal(rawJSON, &searchResult); errr != nil {
 		err = fmt.Errorf("failed to unmarshal result, error: %v", errr)
