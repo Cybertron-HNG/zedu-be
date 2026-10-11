@@ -443,6 +443,11 @@ func GetLatestMessageByThread(threadID string) (*MessageDocument, error) {
 	return &messages[0], nil
 }
 // TODO: enforce message deletion time limit (CYBERTRON-032)
+// DeleteMessage removes a message from Elasticsearch and updates the thread's message count and preview.
+// It deletes the message document by ID, loads the owning thread, and if the deleted message is the
+// thread's latest, refreshes the thread's preview with the newest remaining message.
+// It also records a "last_reply" timestamp and, if the deleted message was the user's latest, replaces
+// that user's preview entry with their new latest message in the thread's Elasticsearch mapping.
 func (m *MessageDocument) DeleteMessage(db *gorm.DB, logger *utility.Logger) (map[string]any, error) {
 	var (
 		thread ThreadDocument
