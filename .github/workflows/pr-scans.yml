@@ -1,0 +1,34 @@
+name: PR scans
+
+# Caller: the logic lives in zedu-hng/zedu-ci (pr-scans.yml), pinned by commit. This file sets the
+# triggers, concurrency and token permissions. Keep the file name: other workflows look it up.
+# Runs Semgrep (Go rules), ClamAV and the obfuscation scan over the PR's added lines.
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - central-staging
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions: {}
+
+concurrency:
+  group: pr-scans-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  scans:
+    name: PR scans
+    if: github.repository == 'zedu-hng/zedu-be'
+    permissions:
+      contents: read
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-scans.yml@90628861430127867a40ee8d7dbc0ba2249c4bb2
+    with:
+      semgrep_configs: p/golang p/security-audit
+      semgrep_paths: pkg services internal utility external cronjobs
+      clamav_exclude_dirs: vendor
