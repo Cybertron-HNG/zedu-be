@@ -14,24 +14,13 @@ if [ "${#CHANGED[@]}" -eq 0 ]; then
 fi
 
 FORBIDDEN_PATTERNS=(
-  '^\.env$'
-  '^\.env\.'
-  '^\.ENV$'
+  '(^|/)\.[eE][nN][vV](\.|$)'
   '\.pem$'
   'credentials\.json$'
   'secrets\.json$'
   'service-account.*\.json$'
-  '^\.aws/'
-  '^\.ssh/'
-)
-
-ALLOWED_EXTENSIONS=(
-  '.ts' '.tsx' '.js' '.jsx' '.mjs' '.cjs'
-  '.json' '.yaml' '.yml' '.md' '.mdx'
-  '.css' '.scss' '.html' '.svg' '.png' '.jpg' '.jpeg' '.gif' '.webp' '.ico'
-  '.woff' '.woff2' '.ttf' '.eot'
-  '.sh' '.toml' '.cjs' '.txt' '.csv'
-  '.go' '.mod' '.sum' '.proto' '.sql'
+  '(^|/)\.aws/'
+  '(^|/)\.ssh/'
 )
 
 MAX_FILE_SIZE_BYTES=$((1024 * 1024)) # 1 MB
@@ -57,23 +46,13 @@ for file in "${CHANGED[@]}"; do
       failures=$((failures + 1))
     fi
 
-    if file "$file" | grep -q "executable"; then
-      mime=$(file -b "$file")
-      if echo "$mime" | grep -Eiq 'executable|binary|archive|compressed'; then
-        if [[ ! "$file" =~ \.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|eot)$ ]]; then
-          ext="${file##*.}"
-          allowed=false
-          for allowed_ext in "${ALLOWED_EXTENSIONS[@]}"; do
-            if [ ".$ext" = "$allowed_ext" ]; then
-              allowed=true
-              break
-            fi
-          done
-          if [ "$allowed" = false ] && echo "$mime" | grep -qi 'binary'; then
-            echo "ERROR: Unexpected binary file: $file ($mime)"
-            failures=$((failures + 1))
-          fi
-        fi
+    # MIME type, not descriptive output: ELF/Go binaries report "executable" but never "binary",
+    # and archives (.zip, .tar.gz) reach neither word.
+    mime=$(file -b --mime-type "$file")
+    if [[ "$mime" =~ ^application/(x-executable|x-pie-executable|x-sharedlib|x-mach-binary|x-dosexec|zip|gzip|x-tar|x-7z-compressed|x-rar|octet-stream)$ ]]; then
+      if [[ ! "$file" =~ \.(png|jpg|jpeg|gif|webp|ico|woff2?|ttf|eot)$ ]]; then
+        echo "ERROR: Unexpected binary file: $file ($mime)"
+        failures=$((failures + 1))
       fi
     fi
   fi
