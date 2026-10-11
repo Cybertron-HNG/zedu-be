@@ -29,6 +29,6 @@ jobs:
     if: github.repository == 'zedu-hng/zedu-be'
     permissions:
       contents: read
-    uses: zedu-hng/zedu-ci/.github/workflows/pr-checks-go.yml@90628861430127867a40ee8d7dbc0ba2249c4bb2
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-checks-go.yml@4d3af2e00864e531a3493986e418dac84c3b1454
     with:
       tests: false

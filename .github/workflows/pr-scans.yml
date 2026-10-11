@@ -27,7 +27,7 @@ jobs:
     if: github.repository == 'zedu-hng/zedu-be'
     permissions:
       contents: read
-    uses: zedu-hng/zedu-ci/.github/workflows/pr-scans.yml@90628861430127867a40ee8d7dbc0ba2249c4bb2
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-scans.yml@4d3af2e00864e531a3493986e418dac84c3b1454
     with:
       semgrep_configs: p/golang p/security-audit
       semgrep_paths: pkg services internal utility external cronjobs
