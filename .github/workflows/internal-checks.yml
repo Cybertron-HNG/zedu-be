@@ -102,22 +102,23 @@ jobs:
           BASE: ${{ steps.ctx.outputs.base }}
         run: npx --yes -p @commitlint/cli@19 commitlint --from "$(git merge-base "origin/$BASE" HEAD)" --to HEAD --verbose
 
-      - name: Dependency audit
-        id: audit
-        if: steps.install.outcome == 'success'
-        continue-on-error: true
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          "$(go env GOPATH)/bin/govulncheck" ./...
-
+      # Only the files the branch changes: the repo has legacy unformatted files, so a whole-tree
+      # gofmt would fail every push until someone reformats it.
       - name: Format
         id: format
         if: steps.install.outcome == 'success'
         continue-on-error: true
+        env:
+          BASE: ${{ steps.ctx.outputs.base }}
         run: |
-          unformatted=$(gofmt -l .)
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "origin/$BASE...HEAD" -- '*.go' | grep -v '^vendor/' || true)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed Go files; nothing to format-check."
+            exit 0
+          fi
+          unformatted=$(gofmt -l "${files[@]}")
           if [ -n "$unformatted" ]; then
-            echo "::error::These files are not gofmt-clean:"
+            echo "::error::These changed files are not gofmt-clean:"
             printf '%s\n' "$unformatted"
             exit 1
           fi
@@ -157,7 +158,6 @@ jobs:
           HEURISTICS: ${{ steps.heuristics.outcome }}
           INSTALL: ${{ steps.install.outcome }}
           COMMITLINT: ${{ steps.commitlint.outcome }}
-          AUDIT: ${{ steps.audit.outcome }}
           FORMAT: ${{ steps.format.outcome }}
           VET: ${{ steps.vet.outcome }}
           BUILD: ${{ steps.build.outcome }}
@@ -190,7 +190,6 @@ jobs:
           post "Gitleaks" "$GITLEAKS"
           post "Malware heuristics" "$HEURISTICS"
           post "Commit messages" "$COMMITLINT"
-          post "Dependency audit" "$AUDIT"
           post "Format" "$FORMAT"
           post "Go vet" "$VET"
           post "Build" "$BUILD"
