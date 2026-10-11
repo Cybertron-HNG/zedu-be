@@ -418,4 +418,33 @@ func TestToggleUserJoinedMessage(t *testing.T) {
 			t.Errorf("expected 0 join system messages when show_joined_message is false, got %d", count)
 		}
 	})
+
+	t.Run("Star and Unstar Channel", func(t *testing.T) {
+		rStar := gin.Default()
+		rStar.POST("/api/v1/channels/:channelId/star", middleware.Authorize(db.Postgresql), channelController.ToggleStarChannel)
+		rStar.GET("/api/v1/organisations/:org_id/channels/starred", middleware.Authorize(db.Postgresql), channelController.GetStarredChannels)
+
+		// 1. Star the channel
+		starReq, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/channels/%s/star", channelID), nil)
+		starReq.Header.Set("Authorization", "Bearer "+token)
+
+		rrStar := httptest.NewRecorder()
+		rStar.ServeHTTP(rrStar, starReq)
+
+		tst.AssertStatusCode(t, rrStar.Code, http.StatusOK)
+		starData := tst.ParseResponse(rrStar)
+		tst.AssertResponseMessage(t, starData["message"].(string), "Channel starred successfully")
+
+		// 2. Unstar the channel
+		unstarReq, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/channels/%s/star", channelID), nil)
+		unstarReq.Header.Set("Authorization", "Bearer "+token)
+
+		rrUnstar := httptest.NewRecorder()
+		rStar.ServeHTTP(rrUnstar, unstarReq)
+
+		tst.AssertStatusCode(t, rrUnstar.Code, http.StatusOK)
+		unstarData := tst.ParseResponse(rrUnstar)
+		tst.AssertResponseMessage(t, unstarData["message"].(string), "Channel unstarred successfully")
+	})
 }
+

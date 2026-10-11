@@ -1,0 +1,72 @@
+package models
+
+import (
+	"time"
+
+	"gorm.io/gorm"
+
+	"github.com/hngprojects/telex_be/pkg/repository/storage/postgresql"
+)
+
+type ChannelStar struct {
+	ID        string         `gorm:"type:uuid;primary_key" json:"id"`
+	UserId    string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel" json:"user_id"`
+	ChannelId string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel" json:"channel_id"`
+	OrgId     string         `gorm:"type:uuid;not null" json:"org_id"`
+	CreatedAt time.Time      `gorm:"type:timestamp;default:current_timestamp" json:"created_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+func (ChannelStar) TableName() string {
+	return "channel_stars"
+}
+
+type ChannelStarRequest struct {
+	UserId    string `json:"user_id"`
+	ChannelId string `json:"channel_id"`
+	OrgId     string `json:"org_id"`
+}
+
+func (s *ChannelStar) AddToStars(db *gorm.DB, req ChannelStarRequest) error {
+	var existing ChannelStar
+	exists := postgresql.CheckExists(db, &existing, "user_id = ? AND channel_id = ? AND org_id = ?", req.UserId, req.ChannelId, req.OrgId)
+	if exists {
+		*s = existing
+		return nil
+	}
+
+	s.UserId = req.UserId
+	s.ChannelId = req.ChannelId
+	s.OrgId = req.OrgId
+
+	return postgresql.CreateOneRecord(db, s)
+}
+
+func (s *ChannelStar) RemoveFromStars(db *gorm.DB, req ChannelStarRequest) error {
+	return postgresql.HardDeleteSpecificRecord(db, &ChannelStar{}, "user_id = ? AND channel_id = ? AND org_id = ?", req.UserId, req.ChannelId, req.OrgId)
+}
+
+func (s *ChannelStar) IsStarChannel(db *gorm.DB, req ChannelStarRequest) bool {
+	return postgresql.CheckExists(db, &ChannelStar{}, "user_id = ? AND channel_id = ? AND org_id = ?", req.UserId, req.ChannelId, req.OrgId)
+}
+
+func IsChannelStarred(db *gorm.DB, userId, channelId string) bool {
+	var star ChannelStar
+	return postgresql.CheckExists(db, &star, "user_id = ? AND channel_id = ?", userId, channelId)
+}
+
+func GetUserStarredChannelIds(db *gorm.DB, userId, orgId string) ([]string, error) {
+	var stars []ChannelStar
+	var channelIds []string
+
+	err := db.Where("user_id = ? AND org_id = ? AND deleted_at IS NULL", userId, orgId).Find(&stars).Error
+	if err != nil {
+		return channelIds, err
+	}
+
+	for _, star := range stars {
+		channelIds = append(channelIds, star.ChannelId)
+	}
+
+	return channelIds, nil
+}

@@ -40,8 +40,8 @@ type Channels struct {
 	IsPrivate         bool      `gorm:"column:is_private;default:false" json:"is_private"`
 	IsRestricted      bool      `gorm:"column:is_restricted;default:false" json:"is_restricted"`
 	ShowJoinedMessage bool      `gorm:"column:show_joined_message;default:true" json:"show_joined_message"`
-	CreatedAt         time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
-	DeletedAt         time.Time `gorm:"column: deleted_at; not null; autoDeleteTime" json:"-"`
+	CreatedAt         time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
+	DeletedAt         gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
 }
 
 type ToggleJoinedMessageRequest struct {
@@ -57,7 +57,7 @@ type UserChannels struct {
 	LastThreadId string                 `gorm:"column:last_thread_id" json:"last_thread_id"`
 	LastReadAt   time.Time              `gorm:"column:last_read_at" json:"last_read_at"`
 	MentionCount int64                  `gorm:"column:mention_count;default:0" json:"mention_count"`
-	DeletedAt    time.Time              `gorm:"index" json:"deleted_at"`
+	DeletedAt    *time.Time             `gorm:"column:deleted_at;index" json:"deleted_at"`
 	Preferences  NotificationPreference `gorm:"type:jsonb;not null;default:'{}'" json:"preferences"`
 	Restricted   bool                   `gorm:"column:restricted;default:false" json:"restricted"`
 	OrgId        string                 `gorm:"-" json:"-"`
@@ -112,6 +112,7 @@ type GetChannelResp struct {
 	ActiveBuzz     *ActiveBuzzInfo     `json:"active_buzz,omitempty"`
 	PreviewMedia   []FileMediaResponse `json:"preview_media"`
 	CreatedAt      time.Time           `json:"created_at"`
+	IsStarred      bool                `json:"is_starred"`
 	Participants   []Participant       `json:"participants"`
 	Users          []Participant       `json:"users"`
 	TotalUserCount int64               `json:"total_user_count"`
@@ -134,6 +135,7 @@ type GetUserChannelResp []struct {
 	PreviewMessage string          `json:"preview_message"`
 	LastReadAt     time.Time       `json:"last_read_at"`
 	Restricted     bool            `json:"restricted"`
+	IsStarred      bool            `gorm:"-" json:"is_starred"`
 }
 
 type RestrictUserReq struct {
@@ -520,6 +522,11 @@ func (r *Channels) GetChannelByID(db *storage.Database, chanReq ChannelInfo) (Ge
 			Pluck("restricted", &isRestricted)
 	}
 
+	var isStarred bool
+	if db != nil {
+		isStarred = IsChannelStarred(db.Postgresql, chanReq.UserID, chanReq.ChannelID)
+	}
+
 	chanResp = GetChannelResp{
 		Channels:       channel,
 		OwnerName:      owner.Name,
@@ -530,6 +537,7 @@ func (r *Channels) GetChannelByID(db *storage.Database, chanReq ChannelInfo) (Ge
 		ActiveBuzz:     activeBuzzInfo,
 		PreviewMedia:   previewMedia,
 		CreatedAt:      channel.CreatedAt,
+		IsStarred:      isStarred,
 		Participants:   participants,
 		Users:          previewUsers,
 		TotalUserCount: count,
@@ -1309,6 +1317,15 @@ func (uc *UserChannels) GetUserChannels(base *storage.Database, ids IDS) (GetUse
 		parts := strings.Split(chanResp[i].ID, "-")
 		lastPart := parts[len(parts)-1]
 		chanResp[i].ChannelSlug = fmt.Sprintf("%s-%s", slug.Make(chanResp[i].Name), lastPart)
+	}
+
+	starredChannelIds, _ := GetUserStarredChannelIds(db, ids.UserID, ids.OrganisationID)
+	starredMap := make(map[string]bool)
+	for _, id := range starredChannelIds {
+		starredMap[id] = true
+	}
+	for i := range chanResp {
+		chanResp[i].IsStarred = starredMap[chanResp[i].ID]
 	}
 
 	sort.Slice(chanResp, func(i, j int) bool {
