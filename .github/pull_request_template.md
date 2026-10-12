@@ -6,6 +6,7 @@ Ticket:
 <!-- What does this PR do, and why? Keep it short and specific. -->
 
 ## Type of change
+<!-- choice -->
 - [ ] `feat` — new feature
 - [ ] `fix` — bug fix
 - [ ] `docs` — documentation only
@@ -17,6 +18,7 @@ Ticket:
 - [ ] `style` — formatting only
 - [ ] `build` — build system/dependencies
 - [ ] `revert` — revert of a previous change
+<!-- /choice -->
 
 ## Related issue
 <!-- e.g. Closes #123 -->
@@ -25,9 +27,11 @@ Closes #
 ## How has this been tested?
 <!-- Give the exact commands and paste evidence (logs, curl output, screenshots). -->
 
+<!-- choice -->
 - [ ] Manual
 - [ ] Unit
 - [ ] Integration
+<!-- /choice -->
 
 **Environment**
 - Go version:
@@ -64,7 +68,9 @@ AGENT.md, CONTRIBUTING.md or internal/config/ requires lead approval. List them 
 <!-- Postman results, terminal output, logs, etc. -->
 
 ## Breaking changes
+<!-- choice -->
 - [ ] No
 - [ ] Yes — described below
+<!-- /choice -->
 
 **If yes, describe the breaking changes and migration path:**
