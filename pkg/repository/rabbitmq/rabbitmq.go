@@ -8,7 +8,6 @@ import (
 	"os"
 	"sync"
 	"time"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hngprojects/telex_be/internal/config"
@@ -41,10 +40,6 @@ func NewQueueManager(config config.RabbitMQ) *QueueManager {
 }
 
 func (qm *QueueManager) Start(logger *utility.Logger) {
-	if qm.config.Connection == "" || strings.Contains(qm.config.Connection, "<") {
-		logger.Info("RabbitMQ connection string not configured or placeholder detected; skipping RabbitMQ connection")
-		return
-	}
 	go qm.HandleReconnect(qm.config.Connection, logger)
 }
 

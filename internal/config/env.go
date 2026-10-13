@@ -56,7 +56,6 @@ type BaseConfig struct {
 	TIMEZONE      string `mapstructure:"TIMEZONE"`
 	SSLMODE       string `mapstructure:"SSLMODE"`
 	USERNAME      string `mapstructure:"USERNAME"`
-	DB_USER       string `mapstructure:"DB_USER"`
 	PASSWORD      string `mapstructure:"PASSWORD"`
 	DB_NAME       string `mapstructure:"DB_NAME"`
 	MIGRATE       bool   `mapstructure:"MIGRATE"`
@@ -67,7 +66,6 @@ type BaseConfig struct {
 	TEST_TIMEZONE      string `mapstructure:"TEST_TIMEZONE"`
 	TEST_SSLMODE       string `mapstructure:"TEST_SSLMODE"`
 	TEST_USERNAME      string `mapstructure:"TEST_USERNAME"`
-	TEST_DB_USER       string `mapstructure:"TEST_DB_USER"`
 	TEST_PASSWORD      string `mapstructure:"TEST_PASSWORD"`
 	TEST_DB_NAME       string `mapstructure:"TEST_DB_NAME"`
 	TEST_MIGRATE       bool   `mapstructure:"TEST_MIGRATE"`
@@ -168,15 +166,6 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 	if config.SERVER_PORT == "" {
 		config.SERVER_PORT = os.Getenv("PORT")
 	}
-	dbUser := config.DB_USER
-	if dbUser == "" {
-		dbUser = config.USERNAME
-	}
-	testDbUser := config.TEST_DB_USER
-	if testDbUser == "" {
-		testDbUser = config.TEST_USERNAME
-	}
-
 	return &Configuration{
 		Server: ServerConfiguration{
 			Port:                      config.SERVER_PORT,
@@ -202,7 +191,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			DB_HOST:       config.DB_HOST,
 			DB_PORT:       config.DB_PORT,
 			DB_CONNECTION: config.DB_CONNECTION,
-			USERNAME:      dbUser,
+			USERNAME:      config.USERNAME,
 			PASSWORD:      config.PASSWORD,
 			TIMEZONE:      config.TIMEZONE,
 			SSLMODE:       config.SSLMODE,
@@ -213,7 +202,7 @@ func (config *BaseConfig) SetupConfigurationn() *Configuration {
 			DB_HOST:       config.TEST_DB_HOST,
 			DB_PORT:       config.TEST_DB_PORT,
 			DB_CONNECTION: config.TEST_DB_CONNECTION,
-			USERNAME:      testDbUser,
+			USERNAME:      config.TEST_USERNAME,
 			PASSWORD:      config.TEST_PASSWORD,
 			TIMEZONE:      config.TEST_TIMEZONE,
 			SSLMODE:       config.TEST_SSLMODE,

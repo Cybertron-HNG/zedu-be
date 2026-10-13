@@ -64,14 +64,6 @@ func GetPagination(c *gin.Context) Pagination {
 }
 
 func SelectWithPagination(Client *elasticsearch.Client, indexName []string, query map[string]any, reciever *any, c *gin.Context) (*PaginationResponse, error) {
-	if Client == nil {
-		return &PaginationResponse{
-			CurrentPage:     defaultPage,
-			PageCount:       0,
-			TotalPagesCount: 0,
-			SummaryCount:    0,
-		}, nil
-	}
 
 	pag := GetPagination(c)
 
@@ -131,17 +123,6 @@ func SelectWithPagination(Client *elasticsearch.Client, indexName []string, quer
 }
 
 func SelectAll(Client *elasticsearch.Client, indexName string, query map[string]any, reciever *any) error {
-	if Client == nil {
-		*reciever = map[string]any{
-			"hits": map[string]any{
-				"hits": []any{},
-				"total": map[string]any{
-					"value": float64(0),
-				},
-			},
-		}
-		return nil
-	}
 
 	body, err := json.Marshal(query)
 	if err != nil {
@@ -176,9 +157,6 @@ func SelectAll(Client *elasticsearch.Client, indexName string, query map[string]
 }
 
 func SelectByID(Client *elasticsearch.Client, indexName string, docID string, reciever *any) error {
-	if Client == nil {
-		return fmt.Errorf("elasticsearch client not initialized")
-	}
 
 	res, err := Client.Get(indexName, docID)
 
@@ -203,9 +181,6 @@ func SelectByID(Client *elasticsearch.Client, indexName string, docID string, re
 }
 
 func CheckExists(Client *elasticsearch.Client, indexName string, query map[string]any) (bool, error) {
-	if Client == nil {
-		return false, nil
-	}
 	body, err := json.Marshal(query)
 	if err != nil {
 		return false, fmt.Errorf("failed to marshal query: %v", err)
