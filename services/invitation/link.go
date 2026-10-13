@@ -314,49 +314,49 @@ func getOrCreateUser(invitation models.Invitation, db *gorm.DB) (models.User, er
 	}
 
 	/*
-	// User creation flow commented out as per requirement
-	if invitation.IsTelexUser {
-		return user, errors.New("invalid credentials. User does not exist")
-	}
+		// User creation flow commented out as per requirement
+		if invitation.IsTelexUser {
+			return user, errors.New("invalid credentials. User does not exist")
+		}
 
-	arr := strings.Split(invitation.Email, "@")
-	email := utility.SplitEmailString(arr[0])
-	name := strings.TrimSpace(strings.ToLower(email))
-	orgId, _ := uuid.FromString(invitation.OrganisationID)
+		arr := strings.Split(invitation.Email, "@")
+		email := utility.SplitEmailString(arr[0])
+		name := strings.TrimSpace(strings.ToLower(email))
+		orgId, _ := uuid.FromString(invitation.OrganisationID)
 
-	user = models.User{
-		ID:          utility.GenerateUUID(),
-		Name:        name,
-		Email:       invitation.Email,
-		IsOnboarded: true,
-		IsActive:    true,
-		CurrentOrg:  orgId,
-		Profile: models.Profile{
-			ID:       utility.GenerateUUID(),
-			UserName: name,
-		},
-	}
+		user = models.User{
+			ID:          utility.GenerateUUID(),
+			Name:        name,
+			Email:       invitation.Email,
+			IsOnboarded: true,
+			IsActive:    true,
+			CurrentOrg:  orgId,
+			Profile: models.Profile{
+				ID:       utility.GenerateUUID(),
+				UserName: name,
+			},
+		}
 
-	err := user.CreateUser(db)
-	if err != nil {
-		return user, err
-	}
+		err := user.CreateUser(db)
+		if err != nil {
+			return user, err
+		}
 
-	resetReq := models.SendWelcomeMail{
-		Email: user.Email,
-	}
+		resetReq := models.SendWelcomeMail{
+			Email: user.Email,
+		}
 
-	err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendWelcomeMail, resetReq)
-	if err != nil {
-		return user, err
-	}
+		err = actions.AddNotificationToQueue(storage.DB.Redis, names.SendWelcomeMail, resetReq)
+		if err != nil {
+			return user, err
+		}
 
-	user, err = user.GetUserByEmail(db, invitation.Email)
-	if err != nil {
-		return user, errors.New("unable to fetch user")
-	}
+		user, err = user.GetUserByEmail(db, invitation.Email)
+		if err != nil {
+			return user, errors.New("unable to fetch user")
+		}
 
-	return user, nil
+		return user, nil
 	*/
 
 	return user, errors.New("user does not exist")
