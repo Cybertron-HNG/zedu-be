@@ -40,8 +40,8 @@ type Channels struct {
 	IsPrivate         bool      `gorm:"column:is_private;default:false" json:"is_private"`
 	IsRestricted      bool      `gorm:"column:is_restricted;default:false" json:"is_restricted"`
 	ShowJoinedMessage bool      `gorm:"column:show_joined_message;default:true" json:"show_joined_message"`
-	CreatedAt         time.Time      `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
-	DeletedAt         gorm.DeletedAt `gorm:"column:deleted_at;index" json:"-"`
+	CreatedAt         time.Time `gorm:"column:created_at; not null; autoCreateTime" json:"created_at"`
+	DeletedAt         time.Time `gorm:"column: deleted_at; not null; autoDeleteTime" json:"-"`
 }
 
 type ToggleJoinedMessageRequest struct {
@@ -57,7 +57,7 @@ type UserChannels struct {
 	LastThreadId string                 `gorm:"column:last_thread_id" json:"last_thread_id"`
 	LastReadAt   time.Time              `gorm:"column:last_read_at" json:"last_read_at"`
 	MentionCount int64                  `gorm:"column:mention_count;default:0" json:"mention_count"`
-	DeletedAt    *time.Time             `gorm:"column:deleted_at;index" json:"deleted_at"`
+	DeletedAt    time.Time              `gorm:"index" json:"deleted_at"`
 	Preferences  NotificationPreference `gorm:"type:jsonb;not null;default:'{}'" json:"preferences"`
 	Restricted   bool                   `gorm:"column:restricted;default:false" json:"restricted"`
 	OrgId        string                 `gorm:"-" json:"-"`
