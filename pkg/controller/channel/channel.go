@@ -1187,15 +1187,16 @@ func (base *Controller) ToggleStarChannel(c *gin.Context) {
 		return
 	}
 
-	orgId := ch.OrganisationID
-	if paramOrgId := c.Param("org_id"); paramOrgId != "" {
-		orgId = paramOrgId
+	if paramOrgId := c.Param("org_id"); paramOrgId != "" && paramOrgId != ch.OrganisationID {
+		rd := utility.BuildErrorResponse(http.StatusNotFound, "error", "channel not found", errors.New("channel not found in organisation"), nil)
+		c.JSON(http.StatusNotFound, rd)
+		return
 	}
 
 	req := models.ChannelStarRequest{
 		UserId:    userId,
 		ChannelId: channelId,
-		OrgId:     orgId,
+		OrgId:     ch.OrganisationID,
 	}
 
 	isStarred, code, err := channel.ToggleStarChannel(req, base.Db.Postgresql)
@@ -1251,5 +1252,3 @@ func (base *Controller) GetStarredChannels(c *gin.Context) {
 	rd := utility.BuildSuccessResponse(code, "starred channels retrieved successfully", starredChannels)
 	c.JSON(code, rd)
 }
-
-

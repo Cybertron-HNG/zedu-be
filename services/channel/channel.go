@@ -667,6 +667,10 @@ func ToggleStarChannel(req models.ChannelStarRequest, db *gorm.DB) (bool, int, e
 		return false, http.StatusNotFound, errors.New("channel does not exist")
 	}
 
+	if !models.IsUserInChannel(db, req.ChannelId, req.UserId) {
+		return false, http.StatusForbidden, errors.New("you are not a member of this channel")
+	}
+
 	var star models.ChannelStar
 	isStarred := star.IsStarChannel(db, req)
 
@@ -706,7 +710,7 @@ func GetStarredChannels(db *storage.Database, ids models.IDS) (models.GetUserCha
 		starredMap[id] = true
 	}
 
-	var starredList models.GetUserChannelResp
+	starredList := models.GetUserChannelResp{}
 	for _, ch := range userChannels {
 		if starredMap[ch.ID] {
 			starredList = append(starredList, ch)
@@ -715,4 +719,3 @@ func GetStarredChannels(db *storage.Database, ids models.IDS) (models.GetUserCha
 
 	return starredList, http.StatusOK, nil
 }
-

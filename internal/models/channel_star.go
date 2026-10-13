@@ -10,8 +10,8 @@ import (
 
 type ChannelStar struct {
 	ID        string         `gorm:"type:uuid;primary_key" json:"id"`
-	UserId    string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel" json:"user_id"`
-	ChannelId string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel" json:"channel_id"`
+	UserId    string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel,where:deleted_at IS NULL" json:"user_id"`
+	ChannelId string         `gorm:"type:uuid;not null;uniqueIndex:idx_channel_star_user_channel,where:deleted_at IS NULL" json:"channel_id"`
 	OrgId     string         `gorm:"type:uuid;not null" json:"org_id"`
 	CreatedAt time.Time      `gorm:"type:timestamp;default:current_timestamp" json:"created_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -39,7 +39,14 @@ func (s *ChannelStar) AddToStars(db *gorm.DB, req ChannelStarRequest) error {
 	s.ChannelId = req.ChannelId
 	s.OrgId = req.OrgId
 
-	return postgresql.CreateOneRecord(db, s)
+	if err := postgresql.CreateOneRecord(db, s); err != nil {
+		// A concurrent request may have starred it first
+		if s.IsStarChannel(db, req) {
+			return nil
+		}
+		return err
+	}
+	return nil
 }
 
 func (s *ChannelStar) RemoveFromStars(db *gorm.DB, req ChannelStarRequest) error {

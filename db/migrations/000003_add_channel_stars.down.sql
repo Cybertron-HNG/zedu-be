@@ -1,1 +1,1 @@
--- Empty down migration
+DROP TABLE IF EXISTS channel_stars;

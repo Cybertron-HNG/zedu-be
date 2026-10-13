@@ -424,7 +424,6 @@ func TestToggleUserJoinedMessage(t *testing.T) {
 		rStar.POST("/api/v1/channels/:channelId/star", middleware.Authorize(db.Postgresql), channelController.ToggleStarChannel)
 		rStar.GET("/api/v1/organisations/:org_id/channels/starred", middleware.Authorize(db.Postgresql), channelController.GetStarredChannels)
 
-		// 1. Star the channel
 		starReq, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/channels/%s/star", channelID), nil)
 		starReq.Header.Set("Authorization", "Bearer "+token)
 
@@ -435,7 +434,19 @@ func TestToggleUserJoinedMessage(t *testing.T) {
 		starData := tst.ParseResponse(rrStar)
 		tst.AssertResponseMessage(t, starData["message"].(string), "Channel starred successfully")
 
-		// 2. Unstar the channel
+		starredReq, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/organisations/%s/channels/starred", orgId), nil)
+		starredReq.Header.Set("Authorization", "Bearer "+token)
+
+		rrStarred := httptest.NewRecorder()
+		rStar.ServeHTTP(rrStarred, starredReq)
+
+		tst.AssertStatusCode(t, rrStarred.Code, http.StatusOK)
+		starredData := tst.ParseResponse(rrStarred)
+		starredList, ok := starredData["data"].([]any)
+		if !ok || len(starredList) != 1 {
+			t.Fatalf("expected 1 starred channel, got %v", starredData["data"])
+		}
+
 		unstarReq, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/api/v1/channels/%s/star", channelID), nil)
 		unstarReq.Header.Set("Authorization", "Bearer "+token)
 
@@ -447,4 +458,3 @@ func TestToggleUserJoinedMessage(t *testing.T) {
 		tst.AssertResponseMessage(t, unstarData["message"].(string), "Channel unstarred successfully")
 	})
 }
-
