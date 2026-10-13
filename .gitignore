@@ -36,6 +36,7 @@ blankPage.md
 build-errors.log
 *.toml
 !.air.toml
+!.gitleaks.toml
 
 temp
 telex_be
