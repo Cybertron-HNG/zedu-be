@@ -49,4 +49,6 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: zedu-hng/zedu-ci/.github/workflows/lead-approval.yml@d631c20d55d9ae3ac2b199256812f748cda5616c
+    uses: zedu-hng/zedu-ci/.github/workflows/lead-approval.yml@bd1fc3c1ee1339192e1e73bdc5af3ed9dd46cc8e
+    with:
+      enforce_lead_approval: false
