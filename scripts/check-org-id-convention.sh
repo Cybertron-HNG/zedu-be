@@ -29,14 +29,20 @@ is_allowed() {
   [ -f "$allowlist" ] && grep -qxF "$1" "$allowlist"
 }
 
-files="$(git -C "$root" diff --name-only "$base" "$head" -- "$pathspec" | grep -E '\.go$' || true)"
+if ! changed="$(git -C "$root" diff --name-only "$base" "$head" -- "$pathspec")"; then
+  echo "::error::git diff failed for ${base}..${head}; check that both refs exist" >&2
+  exit 2
+fi
+files="$(grep -E '\.go$' <<<"$changed" || true)"
 
 violations=""
 for file in $files; do
   is_allowed "$file" && continue
-  hits="$(git -C "$root" diff --unified=0 "$base" "$head" -- "$file" \
-    | grep -E '^\+[^+]' \
-    | grep -nE "$pattern" || true)"
+  if ! diff="$(git -C "$root" diff --unified=0 "$base" "$head" -- "$file")"; then
+    echo "::error::git diff failed for ${base}..${head} -- ${file}" >&2
+    exit 2
+  fi
+  hits="$(grep -E '^\+[^+]' <<<"$diff" | grep -nE "$pattern" || true)"
   if [ -n "$hits" ]; then
     violations="${violations}${file}"$'\n'"${hits}"$'\n'
   fi
