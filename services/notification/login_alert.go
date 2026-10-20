@@ -25,6 +25,7 @@ func (n NotificationObject) SendLoginAlertMail() error {
 	}
 
 	resetPasswordUrl := fmt.Sprintf("%v/auth/forgot-password", configData.App.FRONTEND_URL)
+	loginUrl := fmt.Sprintf("%v/auth/login", configData.App.FRONTEND_URL)
 
 	user, err = user.GetUserByEmail(n.Db, notificationData.Email)
 	if err != nil {
@@ -35,6 +36,7 @@ func (n NotificationObject) SendLoginAlertMail() error {
 		"firstname":          thisOrThatStr(user.Profile.FirstName, user.Email),
 		"business_name":      thisOrThatStr("", ""),
 		"password_reset_url": resetPasswordUrl,
+		"login_url":          loginUrl,
 	})
 	if err != nil {
 		return fmt.Errorf("error converting data to map: %v", err)
