@@ -39,7 +39,7 @@ func (base *Controller) GetIntegrationChannels(c *gin.Context) {
 	}
 
 	base.Logger.Info("integration channels retrieved successfully")
-	rd := utility.BuildSuccessResponse(code, "channel retreived successfully", respData)
+	rd := utility.BuildSuccessResponse(code, "channel retrieved successfully", respData)
 	c.JSON(code, rd)
 }
 

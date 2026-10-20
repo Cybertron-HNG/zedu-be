@@ -48,8 +48,8 @@ func (base *Controller) GetGroupDMChannels(c *gin.Context) {
 		"total_items":  paginationResponse.TotalItems,
 	}
 
-	base.Logger.Info("Group DM channels retreived successfully")
-	rd := utility.BuildSuccessResponse(statusCode, "Group DM channels retreived successfully", resp, paginationData)
+	base.Logger.Info("Group DM channels retrieved successfully")
+	rd := utility.BuildSuccessResponse(statusCode, "Group DM channels retrieved successfully", resp, paginationData)
 	c.JSON(statusCode, rd)
 }
 
@@ -72,8 +72,8 @@ func (base *Controller) GetUserGroupDMs(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("User retrived successfully")
-	rd := utility.BuildSuccessResponse(statusCode, "User retrived successfully", resp)
+	base.Logger.Info("User retrieved successfully")
+	rd := utility.BuildSuccessResponse(statusCode, "User retrieved successfully", resp)
 	c.JSON(statusCode, rd)
 }
 

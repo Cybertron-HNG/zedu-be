@@ -116,8 +116,8 @@ func (base *Controller) GetDmChannels(c *gin.Context) {
 		"total_items":  paginationResponse.TotalItems,
 	}
 
-	base.Logger.Info("Dm channel retrived successfully")
-	rd := utility.BuildSuccessResponse(code, "Dm channel retrived successfully", resp, paginationData)
+	base.Logger.Info("DM channel retrieved successfully")
+	rd := utility.BuildSuccessResponse(code, "DM channel retrieved successfully", resp, paginationData)
 	c.JSON(code, rd)
 }
 
@@ -155,8 +155,8 @@ func (base *Controller) GetDmParticipants(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("Participatint retrived successfully")
-	rd := utility.BuildSuccessResponse(code, "Participants retrived successfully", resp)
+	base.Logger.Info("Participants retrieved successfully")
+	rd := utility.BuildSuccessResponse(code, "Participants retrieved successfully", resp)
 	c.JSON(code, rd)
 }
 

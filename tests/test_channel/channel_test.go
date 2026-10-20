@@ -126,7 +126,7 @@ func TestChannelsEndpoints(t *testing.T) {
 		{
 			Name:         "Get Channels Action",
 			ExpectedCode: http.StatusOK,
-			Message:      "channel retreived successfully",
+			Message:      "channel retrieved successfully",
 			Method:       http.MethodGet,
 			RequestURI:   url.URL{Path: fmt.Sprintf("/api/v1/channels/%s", channels_id)},
 			Headers: map[string]string{

@@ -24,7 +24,7 @@ func (base *Controller) DownloadInvoice(ctx *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("invoiced retrived")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "Invoiced retrived successfully", resp)
+	base.Logger.Info("invoices retrieved")
+	rd := utility.BuildSuccessResponse(http.StatusOK, "Invoices retrieved successfully", resp)
 	ctx.JSON(http.StatusOK, rd)
 }

@@ -134,7 +134,7 @@ func TestGetChannelPreviewMedia(t *testing.T) {
 		tst.AssertStatusCode(t, code, http.StatusOK)
 
 		message := data["message"].(string)
-		tst.AssertResponseMessage(t, message, "channel retreived successfully")
+		tst.AssertResponseMessage(t, message, "channel retrieved successfully")
 
 		responseData := data["data"].(map[string]interface{})
 

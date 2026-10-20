@@ -140,7 +140,7 @@ func (base *Controller) GetChannel(c *gin.Context) {
 	}
 
 	base.Logger.Info("channel retrieved successfully")
-	rd := utility.BuildSuccessResponse(http.StatusOK, "channel retreived successfully", respData)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "channel retrieved successfully", respData)
 	c.JSON(http.StatusOK, rd)
 }
 
