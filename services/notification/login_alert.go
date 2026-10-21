@@ -3,6 +3,7 @@ package notifications
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hngprojects/telex_be/internal/config"
 	"github.com/hngprojects/telex_be/internal/models"
@@ -24,8 +25,9 @@ func (n NotificationObject) SendLoginAlertMail() error {
 		return fmt.Errorf("error decoding saved notification data: %v", err)
 	}
 
-	resetPasswordUrl := fmt.Sprintf("%v/auth/forgot-password", configData.App.FRONTEND_URL)
-	loginUrl := fmt.Sprintf("%v/auth/login", configData.App.FRONTEND_URL)
+	frontendUrl := strings.TrimRight(configData.App.FRONTEND_URL, "/")
+	resetPasswordUrl := fmt.Sprintf("%v/auth/forgot-password", frontendUrl)
+	loginUrl := fmt.Sprintf("%v/auth/login", frontendUrl)
 
 	user, err = user.GetUserByEmail(n.Db, notificationData.Email)
 	if err != nil {
