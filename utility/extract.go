@@ -216,7 +216,7 @@ func extractChannelInfo(source map[string]any, index string) Channel {
 	channel := Channel{
 		ChannelID: getString(source, "channels_id"),
 	}
-	if index == "threads" { // Only threads have channel_name
+	if strings.Contains(index, "threads") { // Thread indexes may include a configured prefix or suffix.
 		channel.ChannelName = getString(source, "channel_name")
 	}
 	return channel
