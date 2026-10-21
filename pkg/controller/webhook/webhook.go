@@ -95,7 +95,7 @@ func (base *Controller) GetWebhookHistory(c *gin.Context) {
 		"additional_info":  additionalInfo,
 	}
 
-	rd := utility.BuildSuccessResponse(http.StatusOK, "webhook history retrived successfully", response)
+	rd := utility.BuildSuccessResponse(http.StatusOK, "webhook history retrieved successfully", response)
 	c.JSON(http.StatusOK, rd)
 }
 

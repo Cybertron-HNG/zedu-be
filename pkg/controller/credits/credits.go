@@ -75,8 +75,8 @@ func (base *Controller) PurchaseCredits(c *gin.Context) {
 		return
 	}
 
-	base.Logger.Info("Checkout Session URL generated succesfully")
-	rd := utility.BuildSuccessResponse(code, "Checkout Session URL generated succesfully", checkoutSession)
+	base.Logger.Info("Checkout Session URL generated successfully")
+	rd := utility.BuildSuccessResponse(code, "Checkout Session URL generated successfully", checkoutSession)
 	c.JSON(code, rd)
 }
 
