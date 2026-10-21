@@ -3,6 +3,7 @@ package notifications
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hngprojects/telex_be/internal/config"
 	"github.com/hngprojects/telex_be/internal/models"
@@ -24,7 +25,9 @@ func (n NotificationObject) SendLoginAlertMail() error {
 		return fmt.Errorf("error decoding saved notification data: %v", err)
 	}
 
-	resetPasswordUrl := fmt.Sprintf("%v/auth/forgot-password", configData.App.FRONTEND_URL)
+	frontendUrl := strings.TrimRight(configData.App.FRONTEND_URL, "/")
+	resetPasswordUrl := fmt.Sprintf("%v/auth/forgot-password", frontendUrl)
+	loginUrl := fmt.Sprintf("%v/auth/login", frontendUrl)
 
 	user, err = user.GetUserByEmail(n.Db, notificationData.Email)
 	if err != nil {
@@ -35,6 +38,7 @@ func (n NotificationObject) SendLoginAlertMail() error {
 		"firstname":          thisOrThatStr(user.Profile.FirstName, user.Email),
 		"business_name":      thisOrThatStr("", ""),
 		"password_reset_url": resetPasswordUrl,
+		"login_url":          loginUrl,
 	})
 	if err != nil {
 		return fmt.Errorf("error converting data to map: %v", err)
