@@ -361,32 +361,33 @@ func (m *SavedMessage) UpdateSavedMessageRemainder(db *gorm.DB, req SetRemainder
 	return http.StatusOK, nil
 }
 
-func (m *SavedMessage) UpdateSavedMessageCompletion(db *gorm.DB, logger *utility.Logger, req MarkCompleteSavedMessageRequest, update map[string]any) (int, error) {
+func (m *SavedMessage) UpdateSavedMessageCompletion(db *gorm.DB, logger *utility.Logger, req MarkCompleteSavedMessageRequest, update map[string]any) (int, bool, error) {
 	var (
 		savedMessage SavedMessage
 	)
 
 	exists := postgresql.CheckExists(db, &savedMessage, "id = ? AND user_id = ?", req.SavedMessageID, req.UserId)
 	if !exists {
-		return http.StatusNotFound, errors.New("saved message not found")
+		return http.StatusNotFound, false, errors.New("saved message not found")
 	}
 
-	if savedMessage.Completed {
-		logger.Info("Saved message %s for user %s is already marked as complete", req.SavedMessageID, req.UserId)
-		return http.StatusOK, nil
+	if savedMessage.Completed == *req.Completed {
+		*m = savedMessage
+		logger.Info("Saved message %s for user %s already has completion status %t", req.SavedMessageID, req.UserId, *req.Completed)
+		return http.StatusOK, false, nil
 	}
 
 	res, err := postgresql.UpdateFields(db, &savedMessage, update, "id = ? AND user_id = ?", req.SavedMessageID, req.UserId)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("failed to update saved message completion: %w", err)
+		return http.StatusInternalServerError, false, fmt.Errorf("failed to update saved message completion: %w", err)
 	}
 
 	if res.RowsAffected == 0 {
-		return http.StatusConflict, errors.New("no rows were updated")
+		return http.StatusConflict, false, errors.New("no rows were updated")
 	}
 
 	*m = savedMessage
-	return http.StatusOK, nil
+	return http.StatusOK, true, nil
 }
 
 func (m *SavedMessage) UpdateSavedMessageArchiveStatus(db *gorm.DB, req ArchiveSavedMessageRequest, update map[string]any) (int, error) {

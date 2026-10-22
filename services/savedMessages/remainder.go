@@ -92,13 +92,13 @@ func MarkCompleteSavedMessage(req models.MarkCompleteSavedMessageRequest, db *st
 		"completed": req.Completed,
 	}
 
-	resp, err := savedMessage.UpdateSavedMessageCompletion(db.Postgresql, logger, req, update)
+	resp, changed, err := savedMessage.UpdateSavedMessageCompletion(db.Postgresql, logger, req, update)
 	if err != nil {
 		logger.Error("failed to mark saved message as complete: %v", err)
 		return resp, err
 	}
 
-	if *req.Completed && savedMessage.RiverJobID != nil && savedMessage.RemainderAt != nil {
+	if changed && *req.Completed && savedMessage.RiverJobID != nil && savedMessage.RemainderAt != nil {
 		_, cancelErr := db.River.JobCancel(ctx, *savedMessage.RiverJobID)
 		if cancelErr != nil {
 			logger.Error("failed to cancel remainder job %d for saved message %s: %v", *savedMessage.RiverJobID, req.SavedMessageID, cancelErr)
